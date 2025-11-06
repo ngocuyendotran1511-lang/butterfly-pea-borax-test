@@ -10,12 +10,12 @@ st.set_page_config(page_title="Hoa đậu biếc phát hiện hàn the", page_ic
 st.title("🌸 Test Kit Hoa Đậu Biếc Phát Hiện Hàn The")
 st.markdown("""
 Ứng dụng giúp **phát hiện và ước lượng nồng độ hàn the (borax)** trong thực phẩm 
-dựa trên màu của dung dịch **hoa đậu biếc**.  
-Hãy chụp hoặc tải ảnh mẫu thử của bạn để hệ thống tự động phân tích.
+dựa trên màu dung dịch **hoa đậu biếc**.  
+Hãy chụp hoặc tải ảnh mẫu thử để hệ thống tự động phân tích màu sắc và đưa ra kết quả.
 """)
 
 # -----------------------------
-# MỤC 1: Chọn ảnh mẫu thử
+# Chọn ảnh mẫu thử
 # -----------------------------
 st.subheader("📷 Chụp ảnh hoặc tải ảnh mẫu thử:")
 
@@ -27,7 +27,7 @@ else:
     uploaded = st.file_uploader("Tải ảnh mẫu thử:", type=["jpg", "jpeg", "png", "gif"])
 
 # -----------------------------
-# MỤC 2: Ảnh mẫu chuẩn (chỉ dùng nội bộ, không hiển thị)
+# Ảnh mẫu chuẩn nội bộ
 # -----------------------------
 sample_names = ["0M", "0.001M", "0.01M", "0.1M", "1M"]
 samples = {}
@@ -35,21 +35,20 @@ samples = {}
 def mean_rgb(arr):
     return np.mean(arr[:, :, 0]), np.mean(arr[:, :, 1]), np.mean(arr[:, :, 2])
 
-# Đọc mẫu chuẩn (đặt sẵn cùng thư mục app)
 for name in sample_names:
     filename = f"mẫu {name}.GIF"
     if os.path.exists(filename):
         img = Image.open(filename).convert("RGB")
         samples[name] = np.array(img)
 
-# Tính trung bình RGB mẫu chuẩn
+# Tính trung bình màu chuẩn
 sample_colors = {}
 for name, arr in samples.items():
     r, g, b = mean_rgb(arr)
     sample_colors[name] = np.array([r, g, b])
 
 # -----------------------------
-# MỤC 3: Phân tích mẫu người dùng
+# Xử lý ảnh mẫu người dùng
 # -----------------------------
 if uploaded:
     img = Image.open(uploaded).convert("RGB")
@@ -59,9 +58,35 @@ if uploaded:
     r, g, b = mean_rgb(arr)
     sample_rgb = np.array([r, g, b])
 
-    st.write(f"🔹 Giá trị trung bình RGB: **R={r:.0f}, G={g:.0f}, B={b:.0f}**")
+    # Hiển thị giá trị và màu trung bình
+    st.write(f"🔹 **Giá trị trung bình RGB:** R={r:.0f}, G={g:.0f}, B={b:.0f}")
 
-    # So sánh khoảng cách màu
+    avg_color_hex = '#%02x%02x%02x' % (int(r), int(g), int(b))
+    st.markdown(
+        f"<div style='width:100%; height:50px; border-radius:8px; background-color:{avg_color_hex}; text-align:center; line-height:50px;'>🎨 Màu trung bình của mẫu</div>",
+        unsafe_allow_html=True
+    )
+
+    # -----------------------------
+    # Giải thích ý nghĩa giá trị RGB
+    # -----------------------------
+    if abs(r - b) < 15 and abs(g - b) < 15:
+        desc_rgb = "Màu **tím-xanh** cân bằng → **Mẫu âm tính hoặc hàn the rất thấp.**"
+    elif b > r and b > g:
+        if b - max(r, g) < 20:
+            desc_rgb = "Màu **xanh lam nhẹ** → **Có thể có hàn the ở mức thấp.**"
+        elif b - max(r, g) < 50:
+            desc_rgb = "Màu **xanh lam rõ** → **Khả năng có hàn the trung bình.**"
+        else:
+            desc_rgb = "Màu **xanh sáng / xanh lục nhạt** → **Hàm lượng hàn the cao.**"
+    else:
+        desc_rgb = "Màu **tím hoặc tím hồng** → **Âm tính, không có hàn the.**"
+
+    st.markdown(f"🧠 **Phân tích màu sắc:** {desc_rgb}")
+
+    # -----------------------------
+    # So sánh với mẫu chuẩn
+    # -----------------------------
     closest_name = None
     min_dist = float("inf")
     for name, ref_rgb in sample_colors.items():
@@ -70,7 +95,9 @@ if uploaded:
             min_dist = dist
             closest_name = name
 
-    # Kết quả phân tích
+    # -----------------------------
+    # Kết quả định tính & ước lượng
+    # -----------------------------
     if closest_name == "0M":
         result = "✅ Không phát hiện hàn the"
         concentration = 0
@@ -78,13 +105,13 @@ if uploaded:
         icon = "🟢"
         desc = "Mẫu âm tính, an toàn."
     elif closest_name == "0.001M":
-        result = "⚠️ Có dấu hiệu rất nhẹ"
+        result = "⚠️ Dấu hiệu hàn the rất nhẹ"
         concentration = 20
         color = "#f1c40f"
         icon = "🟡"
         desc = "Có thể chứa lượng hàn the nhỏ (<30 mg/L)."
     elif closest_name == "0.01M":
-        result = "⚠️ Có hàn the mức trung bình"
+        result = "⚠️ Có hàn the trung bình"
         concentration = 65
         color = "#e67e22"
         icon = "🟠"
@@ -102,18 +129,20 @@ if uploaded:
         icon = "🟣"
         desc = "Vượt giới hạn an toàn (>200 mg/L)."
 
+    # -----------------------------
     # Hiển thị kết quả đẹp
+    # -----------------------------
     st.markdown(f"""
-    <div style='background-color:{color}22; padding:20px; border-radius:15px;'>
+    <div style='background-color:{color}22; padding:20px; border-radius:15px; margin-top:10px;'>
         <h3 style='color:{color}; text-align:center;'>{icon} {result}</h3>
         <p style='text-align:center; color:#333;'>{desc}</p>
     </div>
     """, unsafe_allow_html=True)
 
-    st.write(f"🎯 Mẫu thử gần giống với **mẫu chuẩn {closest_name}** (khoảng cách màu = {min_dist:.1f})")
+    st.write(f"🎯 Mẫu gần giống với **mẫu chuẩn {closest_name}** (khoảng cách màu = {min_dist:.1f})")
     st.progress(min(concentration, 250) / 250)
     st.markdown(f"<h4 style='color:{color}; text-align:center;'>💧 Ước lượng nồng độ hàn the: ~{concentration} mg/L</h4>", unsafe_allow_html=True)
 
-    st.caption("📌 Kết quả chỉ mang tính định tính và tham khảo. Nên kiểm tra lại bằng phương pháp chuẩn hóa trong phòng thí nghiệm.")
+    st.caption("📌 Kết quả chỉ mang tính tham khảo định tính. Nên xác nhận lại bằng phương pháp chuẩn hóa trong phòng thí nghiệm.")
 else:
     st.info("Vui lòng chụp hoặc tải ảnh mẫu thử để bắt đầu phân tích.")
