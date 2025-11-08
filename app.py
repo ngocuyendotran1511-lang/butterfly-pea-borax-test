@@ -72,9 +72,6 @@ if uploaded:
     # -----------------------------
     if abs(r - b) < 15 and abs(g - b) < 15:
         desc_rgb = "Màu **tím nhạt** cân bằng → **Mẫu âm tính hoặc không có hàn the.**"
-    elif b > r and b > g:
-        if b - max(r, g) < 20:
-            desc_rgb = "Màu **xanh lam nhẹ** → **Có thể có hàn the ở mức thấp.**"
         elif b - max(r, g) < 50:
             desc_rgb = "Màu **xanh lam rõ** → **Khả năng có hàn the trung bình.**"
         else:
@@ -110,11 +107,6 @@ if uploaded:
         color = "#f1c40f"
         icon = "🟡"
         desc = "Có thể chứa lượng hàn the nhỏ (<30 mg/L)."
-    elif closest_name == "0.01M":
-        result = "⚠️ Có hàn the trung bình"
-        concentration = 65
-        color = "#e67e22"
-        icon = "🟠"
         desc = "Cần kiểm tra thêm (50–80 mg/L)."
     elif closest_name == "0.1M":
         result = "❗ Hàm lượng hàn the cao"
