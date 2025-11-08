@@ -118,6 +118,10 @@ else:
         status = "✅ Không phát hiện hàn the (âm tính)"
         badge_color = "#2ecc71"
         guidance = "Mẫu nằm trong vùng âm tính."
+    elif conc_est <= 80:
+        status = "⚠️ Dấu hiệu hàn the nhẹ (~vết)"
+        badge_color = "#f1c40f"
+        guidance = "Cần thận trọng; nếu cần, tiến hành kiểm tra bằng phương pháp chuẩn."
     elif conc_est <= 200:
         status = "❗ Có hàn the (mức trung bình/không an toàn)"
         badge_color = "#e67e22"
