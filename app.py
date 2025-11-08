@@ -71,7 +71,7 @@ if uploaded:
     # Giải thích ý nghĩa giá trị RGB
     # -----------------------------
     if abs(r - b) < 15 and abs(g - b) < 15:
-        desc_rgb = "Màu **tím-xanh** cân bằng → **Mẫu âm tính hoặc hàn the rất thấp.**"
+        desc_rgb = "Màu **tím nhạt** cân bằng → **Mẫu âm tính hoặc không có hàn the.**"
     elif b > r and b > g:
         if b - max(r, g) < 20:
             desc_rgb = "Màu **xanh lam nhẹ** → **Có thể có hàn the ở mức thấp.**"
