@@ -28,22 +28,18 @@ def try_load_image_mean(path):
 def euclidean(a, b):
     return np.linalg.norm(a - b)
 
-# -------------------------
-# 1) Tạo màu chuẩn âm từ 2 file mẫu âm bạn đã cung cấp
-# -------------------------
-neg_files = ["mẫu âm.GIF", "MẪU ÂM 2.GIF"]  # tên file chính xác như bạn đã tải lên repo
-neg_colors = []
-for f in neg_files:
-    c = try_load_image_mean(f)
-    if c is not None:
-        neg_colors.append(c)
+# =========================
+# HIỆU CHUẨN MẪU ÂM (QUE THỬ CHƯA QUA PHẢN ỨNG)
+# =========================
+NEGATIVE_IMAGE = "mau_am_thuc_te.png"
 
-if len(neg_colors) == 0:
-    st.warning("Không tìm thấy file mẫu âm trong repo (mẫu âm.GIF, MẪU ÂM 2.GIF). Vui lòng upload để có hiệu chuẩn chính xác.")
-    # fallback default negative color (tím nhạt) - chỉ để app chạy
-    negative_color = np.array([110.0, 90.0, 140.0])
+neg_color = try_load_image_mean(NEGATIVE_IMAGE)
+
+if neg_color is None:
+    st.error("❌ Không tìm thấy ảnh mẫu âm thực tế. Vui lòng kiểm tra tên file.")
+    st.stop()
 else:
-    negative_color = np.mean(np.stack(neg_colors, axis=0), axis=0)
+    negative_color = neg_color
 
 # -------------------------
 # 2) Các mẫu chuẩn khác (cố gắng tải file nếu có, nếu không dùng giá trị mặc định)
